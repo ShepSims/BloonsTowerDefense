@@ -68,8 +68,8 @@ export const levelDefinitions: { [key: number]: LevelDefinition } = {
       { type: "balloon", spawnTime: 1000, health: 1, speed: 2 },
       { type: "balloon", spawnTime: 2000, health: 1, speed: 2 },
       { type: "balloon", spawnTime: 3000, health: 1, speed: 2 },
-      { type: "balloon", spawnTime: 4000, health: 1, speed: 2 },
-      { type: "balloon", spawnTime: 5000, health: 1, speed: 2 },
+      { type: "balloon", spawnTime: 4000, health: 2, speed: 2 },
+      { type: "balloon", spawnTime: 5000, health: 2, speed: 2 },
     ],
   },
   2: {
@@ -206,7 +206,6 @@ export const shootProjectiles = (
   });
   return projectiles.map(p => ({ ...p, x: p.x + p.dx, y: p.y + p.dy }));
 };
-// Updated checkCollisions: Accepts an optional callback to call when a balloon is popped.
 export const checkCollisions = (
   projectiles: ProjectileType[],
   balloons: BalloonType[],
@@ -218,9 +217,16 @@ export const checkCollisions = (
       balloon => Math.hypot(projectile.x - balloon.x, projectile.y - balloon.y) < 15,
     );
     if (collisionIndex >= 0) {
-      balloons.splice(collisionIndex, 1);
+      const collidedBalloon = balloons[collisionIndex];
+      if (collidedBalloon.health > 1) {
+        // Decrease health, change color.
+        collidedBalloon.health -= 1;
+      } else {
+        // Health is 1: remove balloon.
+        balloons.splice(collisionIndex, 1);
+        if (onBalloonPopped) onBalloonPopped();
+      }
       setBalloons([...balloons]);
-      if (onBalloonPopped) onBalloonPopped();
       return false;
     }
     return true;
